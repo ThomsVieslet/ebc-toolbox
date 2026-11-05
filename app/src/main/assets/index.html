@@ -110,7 +110,7 @@
           <button class="rstbig" onclick="resetMalts()">↺ Réinitialiser</button></h2>
         <div id="malts"></div>
         <button class="addbtn" onclick="addMalt()">+ Ajouter un malt</button>
-        <div class="formula">EBC bière = 2,94 × (4,24 × Σ(kg × EBC malt) / L)^0,686 — formule de Morey<br>OG estimée = 1 + 21,6 × rendement × Σkg / (1000 × L) — approximation (potentiel ~37 ppg pour tous les malts)</div>
+        <div class="formula">EBC bière = 2,94 × (4,24 × Σ(kg × EBC malt) / L)^0,686 — formule de Morey<br>OG estimée = 1 + 0,309 × rendement × Σkg / L — approximation (potentiel ~37 ppg ≈ 80 % d'extrait)</div>
       </div>
       <div class="arrow">↓</div>
 
@@ -327,8 +327,8 @@
         const mcu = 4.24 * sumKgEbc / vol;
         const srm = sumKgEbc > 0 ? 1.4922 * Math.pow(mcu, 0.6859) : 0;
         const ebcBeer = srm * 1.97;
-        // OG estimée
-        const pts = 21.6 * eff * sumKg / vol;
+        // OG estimée : potentiel ~37 ppg (≈80 % d'extrait) → 309 points par kg et par L à 100 %
+        const pts = 309 * eff * sumKg / vol;
         const og = 1 + pts / 1000;
         // bandeau
         const hex = ebcToHex(ebcBeer);
