@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EBC Toolbox</title>
+    <style>
+      :root {
+        font-family: Inter, system-ui, sans-serif;
+        color: #111827;
+        background: #f1f5f9;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 0 0 130px 0; }
+      .wrap { max-width: 560px; margin: 0 auto; padding: 12px; }
+      h1 { font-size: 1.3rem; color: #0f766e; margin: 8px 0 2px; text-align:center; }
+      .sub { text-align:center; color:#64748b; font-size:.8rem; margin-bottom:12px; }
+      .card {
+        background: #fff; border-radius: 14px; padding: 14px;
+        margin-bottom: 6px; box-shadow: 0 1px 3px rgba(0,0,0,.08);
+      }
+      .card h2 { font-size: .95rem; margin: 0 0 10px; color: #0f766e; display:flex; align-items:center; gap:8px; }
+      .badge { background:#0f766e; color:#fff; border-radius:50%; width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; font-size:.75rem; flex:none; }
+      .arrow { text-align:center; color:#94a3b8; font-size:1.2rem; line-height:1; margin:2px 0 8px; }
+      label { display:block; font-size:.75rem; color:#475569; margin:6px 0 3px; }
+      input {
+        width: 100%; padding: 12px; font-size: 1rem; border: 1px solid #cbd5e1;
+        border-radius: 10px; background:#fff; color:#111827;
+      }
+      input:focus { outline: 2px solid #0f766e; border-color:#0f766e; }
+      .row2 { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+      .malt { border:1px solid #e2e8f0; border-radius:12px; padding:10px; margin-bottom:10px; background:#f8fafc; }
+      .malt-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+      .malt-head span { font-size:.8rem; color:#64748b; }
+      .del { background:#fee2e2; color:#b91c1c; border:none; border-radius:8px; padding:6px 10px; font-size:.75rem; }
+      .subtl { font-size:.78rem; color:#0f766e; font-weight:600; margin-top:6px; display:flex; align-items:center; gap:6px; }
+      .sw { display:inline-block; width:14px; height:14px; border-radius:4px; border:1px solid rgba(0,0,0,.15); flex:none; }
+      .aroma { font-size:.7rem; color:#64748b; margin-top:2px; font-style:italic; }
+      .stepper { display:flex; gap:4px; align-items:stretch; }
+      .stcol { display:flex; flex-direction:column; gap:4px; }
+      .stcol button { width:46px; padding:7px 0; font-size:.75rem; }
+      .stepper button {
+        flex:none; width:46px; padding:10px 0; background:#fff; color:#0f766e;
+        border:1px solid #cbd5e1; border-radius:10px; font-size:.85rem; font-weight:700;
+      }
+      .stepper button:active { background:#0f766e; color:#fff; }
+      .stepper input { text-align:center; min-width:0; flex:1; padding:10px 2px; }
+      .addbtn {
+        width:100%; padding:12px; background:#fff; color:#0f766e; border:1.5px dashed #0f766e;
+        border-radius:10px; font-size:.9rem; font-weight:600; margin-top:4px;
+      }
+      .rst { background:#e2e8f0; color:#0f766e; border:none; border-radius:6px; padding:1px 7px; font-size:.7rem; }
+      .rstbig { margin-left:auto; background:#e2e8f0; color:#0f766e; border:none; border-radius:8px; padding:5px 10px; font-size:.72rem; font-weight:600; }
+      .formula { font-size:.72rem; color:#64748b; margin-top:8px; line-height:1.5; }
+      /* échelle couleur */
+      #colorGauge { width:100%; display:block; border-radius:8px; border:1px solid #cbd5e1; }
+      .cols { display: grid; grid-template-columns: 1fr 160px; gap: 10px; align-items: start; }
+      .cols .row2 { grid-template-columns: 1fr; }
+      .gaugecard { position: sticky; top: 8px; }
+      @media (max-width: 430px) { .cols { grid-template-columns: 1fr; } .gaugecard { position: static; } }
+      .gauge-flex { display:flex; gap:6px; align-items:flex-start; }
+      #laneLabelsE { flex:none; width:76px; padding-top:14px; }
+      #laneLabelsE div { height:9px; font-size:6.5px; color:#64748b; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; line-height:9px; margin-bottom:3px; }
+      #styleGauge { flex:1; width:auto; min-width:0; display:block; }
+      .gauge-legend { display:flex; justify-content:space-between; font-size:.7rem; color:#64748b; }
+      .zone { display:flex; align-items:center; gap:8px; font-size:.78rem; margin-top:7px; }
+      .zone .sw { width:18px; height:18px; border-radius:5px; }
+      .zone b { color:#0f766e; }
+      .zone.hit { background:#ccfbf1; border-radius:8px; padding:4px 8px; }
+      .hint { font-size:.72rem; color:#94a3b8; margin-top:6px; }
+      /* bandeau résultat */
+      #resultBar {
+        position: fixed; bottom: 0; left: 0; right: 0;
+        background: #f7e188; color: #111827; padding: 14px 16px;
+        padding-bottom: calc(14px + env(safe-area-inset-bottom));
+        display: flex; justify-content: space-between; align-items: center;
+        box-shadow: 0 -3px 12px rgba(0,0,0,.18);
+        transition: background .25s;
+      }
+      #resultBar .lab { font-size:.75rem; opacity:.85; }
+      #resultBar .val { font-size: 2rem; font-weight: 800; line-height:1; text-align:right; }
+      #resultBar .val small { font-size:.85rem; font-weight:400; }
+      #resultBar #ogInfo { font-size:.75rem; font-weight:600; margin-top:2px; }
+      #resultBar .matchbar { font-size:.6rem; line-height:1.25; max-width:240px; max-height:3.8em; overflow:hidden; margin-top:2px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>🍺 EBC Toolbox</h1>
+      <div class="sub">Couleur de la bière (formule de Morey) + densité initiale estimée</div>
+
+      <div class="card">
+        <h2><span class="badge">1</span> Brassin</h2>
+        <div class="row2">
+          <div>
+            <label for="vol">Volume après ébullition (L)</label>
+            <input id="vol" inputmode="decimal" value="23" />
+          </div>
+          <div>
+            <label for="eff">Rendement du brassage (%)</label>
+            <input id="eff" inputmode="decimal" value="75" />
+          </div>
+        </div>
+      </div>
+      <div class="arrow">↓</div>
+
+      <div class="cols">
+      <div class="card">
+        <h2><span class="badge">2</span> Malts
+          <button class="rstbig" onclick="resetMalts()">↺ Réinitialiser</button></h2>
+        <div id="malts"></div>
+        <button class="addbtn" onclick="addMalt()">+ Ajouter un malt</button>
+        <div class="formula">EBC bière = 2,94 × (4,24 × Σ(kg × EBC malt) / L)^0,686 — formule de Morey<br>OG estimée = 1 + 21,6 × rendement × Σkg / (1000 × L) — approximation (potentiel ~37 ppg pour tous les malts)</div>
+      </div>
+      <div class="arrow">↓</div>
+
+      <div class="card gaugecard">
+        <h2><span class="badge">3</span> Échelle des couleurs</h2>
+        <canvas id="colorGauge" width="500" height="56"></canvas>
+        <div id="zones"></div>
+        <label for="styleSearchE" style="margin-top:10px">Comparer à un style (tapez pour chercher)</label>
+        <input id="styleSearchE" list="styleDatalistE" placeholder="Ex. : Saison" />
+        <div class="gauge-flex" style="margin-top:8px">
+          <div id="laneLabelsE"></div>
+          <canvas id="styleGauge" width="160" height="40"></canvas>
+        </div>
+        <div class="gauge-legend"><span>0</span><span>20</span><span>40</span><span>60</span><span>80 EBC</span></div>
+        <div class="hint">La couleur réelle peut varier de ±20 % selon l'ébullition, la clarté, l'oxydation… (Palmer)</div>
+      </div>
+      </div>
+    </div>
+
+    <div id="resultBar">
+      <div>
+        <div class="lab">EBC total</div>
+        <div id="zoneInfo" class="lab"></div>
+        <div id="styleInfo" class="lab"></div>
+        <div id="ogInfo"></div>
+        <div class="matchbar" id="matchBarE"></div>
+      </div>
+      <div class="val" id="ebcVal">0 <small>EBC</small></div>
+    </div>
+
+    <script>
+      // ---- Bibliothèque de malts : stock + liste complète fusionnés ----
+      // { name, min, max, ebc (milieu du range), stock, aroma }
+      const MALTS = [
+        { name: "Malt Pilsner (stock)", min: 2.5, max: 4.5, ebc: 3.5, stock: true, aroma: "Malté, Sucré, Noisette" },
+        { name: "Malt Pale Ale (stock)", min: 4, max: 10, ebc: 7, stock: true, aroma: "Malté, Sucré, Noisette" },
+        { name: "Malt de froment (stock)", min: 3.5, max: 5.5, ebc: 4.5, stock: true, aroma: "Épicé" },
+        { name: "Malt de blé (stock)", min: 4.5, max: 5.5, ebc: 5, stock: true, aroma: "Épicé" },
+        { name: "Malt de seigle (stock)", min: 4, max: 10, ebc: 7, stock: true, aroma: "Seigle" },
+        { name: "Malt Vienna (stock)", min: 7, max: 10, ebc: 8.5, stock: true, aroma: "Sucré, Caramel, Noisette" },
+        { name: "Malt Munich (stock)", min: 13, max: 17, ebc: 15, stock: true, aroma: "Malté" },
+        { name: "Malt CaraRed (stock)", min: 40, max: 60, ebc: 50, stock: true, aroma: "Caramel, Fruit" },
+        { name: "Malt CaraMunich type 2 (stock)", min: 110, max: 130, ebc: 120, stock: true, aroma: "Caramel" },
+        { name: "Malt Caramel 600 (stock)", min: 550, max: 650, ebc: 600, stock: true, aroma: "Caramel, Raisins" },
+        { name: "Malt Chocolate light (stock)", min: 400, max: 600, ebc: 500, stock: true, aroma: "Grillé, Chocolat, Café" },
+        { name: "Malt Black (stock)", min: 1300, max: 1500, ebc: 1400, stock: true, aroma: "Grillé" },
+        { name: "Malt acidifié / Sauermalz (stock)", min: 1.5, max: 5.1, ebc: 3.3, stock: true, aroma: "" },
+        { name: "Malt de froment fumé en chêne (stock)", min: 4, max: 6, ebc: 5, stock: true, aroma: "Fumé, Chêne" },
+        { name: "Flocons avoine (stock)", min: 1, max: 1, ebc: 1, stock: true, aroma: "" },
+        { name: "Caramel Pale", min: 6, max: 10, ebc: 8, stock: false, aroma: "Sucré, Caramel, Fruit" },
+        { name: "Chocolate", min: 800, max: 1000, ebc: 900, stock: false, aroma: "Grillé, Noisette, Torréfié" },
+        { name: "Chocolate Dark", min: 800, max: 1000, ebc: 900, stock: false, aroma: "Grillé, Chocolat noir, Café" },
+        { name: "Chocolate Light", min: 350, max: 450, ebc: 400, stock: false, aroma: "Grillé, Chocolat noir, Café" },
+        { name: "Dextrin", min: 10, max: 16, ebc: 13, stock: false, aroma: "Rondeur, Sucré" },
+        { name: "Enzyme", min: 7, max: 10, ebc: 8.5, stock: false, aroma: "" },
+        { name: "Froment / Blé (Wheat)", min: 3.5, max: 6.5, ebc: 5, stock: false, aroma: "Épicé" },
+        { name: "Froment Fumé", min: 7, max: 10, ebc: 8.5, stock: false, aroma: "Fumé" },
+        { name: "Golden Ale", min: 9, max: 14, ebc: 11.5, stock: false, aroma: "Malté, Biscuit, Sucré, Noisette" },
+        { name: "Lightly Peated", min: 7, max: 10, ebc: 8.5, stock: false, aroma: "Tourbe, Fumé" },
+        { name: "Malt Fumé", min: 7, max: 10, ebc: 8.5, stock: false, aroma: "Fumé" },
+        { name: "Malt hêtre fumé", min: 4, max: 8, ebc: 6, stock: false, aroma: "Fumée, Bois de hêtre, Vanille, Miel" },
+        { name: "Munich", min: 13, max: 17, ebc: 15, stock: false, aroma: "Malté" },
+        { name: "Munich Blond", min: 14, max: 18, ebc: 16, stock: false, aroma: "Noisetté" },
+        { name: "Munich Foncé", min: 20, max: 24, ebc: 22, stock: false, aroma: "Noisetté" },
+        { name: "Orge grillée (Roasted Barley)", min: 900, max: 1300, ebc: 1100, stock: false, aroma: "Grain, Sec" },
+        { name: "Pale Ale", min: 4, max: 10, ebc: 7, stock: false, aroma: "Malté, Sucré, Noisette" },
+        { name: "Pearled Black", min: 800, max: 1200, ebc: 1000, stock: false, aroma: "Café noir, Amertume" },
+        { name: "Pilsner", min: 2.5, max: 4.5, ebc: 3.5, stock: false, aroma: "Malté, Sucré, Noisette" },
+        { name: "Pilsner Zero", min: 3, max: 4.5, ebc: 3.8, stock: false, aroma: "Malté, Sucré, Noisette" },
+        { name: "Red Active", min: 30, max: 40, ebc: 35, stock: false, aroma: "Malté, Noisette" },
+        { name: "Red Ale", min: 60, max: 80, ebc: 70, stock: false, aroma: "Malté, Amer, Grillé, Noisette" },
+        { name: "Seigle (Rye)", min: 4, max: 10, ebc: 7, stock: false, aroma: "Seigle" },
+        { name: "Special-B", min: 260, max: 320, ebc: 290, stock: false, aroma: "Caramel, Raisins" },
+        { name: "Vienna", min: 7, max: 10, ebc: 8.5, stock: false, aroma: "Sucré, Caramel, Noisette" },
+        { name: "Whisky", min: 2.5, max: 3.7, ebc: 3.1, stock: false, aroma: "Tourbe, Fumé" }
+      ];
+
+      // ---- Zones de couleur ----
+      const ZONES = [
+        { name: "Pâle (blonde claire)", min: 0, max: 8 },
+        { name: "Dorée (blonde)", min: 8, max: 16 },
+        { name: "Ambrée", min: 16, max: 30 },
+        { name: "Brune", min: 30, max: 50 },
+        { name: "Noire", min: 50, max: 80 }
+      ];
+
+      // ---- Styles de bière : EBC min / max (famille, style, min, max) ----
+      const EBC_STYLES = [
+["Standard American Beer","American Light Lager",4,6],["Standard American Beer","American Lager",4,8],["Standard American Beer","Cream Ale",5,10],["Standard American Beer","American Wheat Beer",6,12],["International Lager","International Pale Lager",4,12],["International Lager","International Amber Lager",14,28],["International Lager","International Dark Lager",28,43],["Czech Lager","Czech Pale Lager",6,12],["Czech Lager","Czech Premium Pale Lager",7,12],["Czech Lager","Czech Amber Lager",20,32],["Czech Lager","Czech Dark Lager",28,69],["Pale Malty European Beer","Munich Helles",6,10],["Pale Malty European Beer","Festbier",8,14],["Pale Malty European Beer","Helles Bock",12,22],["Pale Bitter European Beer","German Leichtbier",4,10],["Pale Bitter European Beer","Kölsch",7,10],["Pale Bitter European Beer","German Helles Exportbier",8,14],["Pale Bitter European Beer","German Pils",4,10],["Amber Malty European Beer","Märzen",16,33],["Amber Malty European Beer","Rauchbier",24,43],["Amber Malty European Beer","Dunkles Bock",28,43],["Amber Bitter European Beer","Vienna Lager",18,30],["Amber Bitter European Beer","Altbier",22,33],["Amber Bitter European Beer","Pale Kellerbier",6,14],["Amber Bitter European Beer","Amber Kellerbier",14,33],["Dark European Lager","Munich Dunkel",28,55],["Dark European Lager","Schwarzbier",33,59],["Strong European Beer","Doppelbock",12,49],["Strong European Beer","Eisbock",35,59],["Strong European Beer","Baltic Porter",33,59],["German Wheat Beer","Weissbier",4,12],["German Wheat Beer","Dunkles Weissbier",28,45],["German Wheat Beer","Weizenbock",12,49],["British Bitter","Ordinary Bitter",16,28],["British Bitter","Best Bitter",16,32],["British Bitter","Strong Bitter",16,35],["Pale CommonWealth Beer","British Golden Ale",4,12],["Pale CommonWealth Beer","Australian Sparkling Ale",8,14],["Pale CommonWealth Beer","English IPA",12,28],["Brown British Beer","Dark Mild",24,49],["Brown British Beer","British Brown Ale",24,43],["Brown British Beer","English Porter",39,59],["Scottish Ale","Scottish Light",33,43],["Scottish Ale","Scottish Heavy",26,43],["Scottish Ale","Scottish Export",26,43],["Irish Beer","Irish Red Ale",18,28],["Irish Beer","Irish Stout",49,79],["Irish Beer","Irish Extra Stout",49,79],["Dark British Beer","Sweet Stout",59,79],["Dark British Beer","Oatmeal Stout",43,79],["Dark British Beer","Tropical Stout",59,79],["Dark British Beer","Foreign Extra Stout",59,79],["Strong British Ale","British Strong Ale",16,43],["Strong British Ale","Old Ale",20,43],["Strong British Ale","Wee Heavy",28,49],["Strong British Ale","English Barleywine",16,43],["Pale American Ale","Blonde Ale",6,12],["Pale American Ale","American Pale Ale",10,20],["Amber & Brown American Beer","American Amber Ale",20,33],["Amber & Brown American Beer","California Common",20,28],["Amber & Brown American Beer","American Brown Ale",35,69],["American Porter & Stout","American Porter",43,79],["American Porter & Stout","American Stout",59,79],["American Porter & Stout","Imperial Stout",59,79],["IPA","American IPA",12,28],["IPA","Belgian IPA",10,30],["IPA","Black IPA",49,79],["IPA","Brown IPA",22,37],["IPA","Red IPA",22,37],["IPA","Rye IPA",12,28],["IPA","White IPA",10,16],["Strong American Ale","Double IPA",12,28],["Strong American Ale","American Strong Ale",14,37],["Strong American Ale","American Barleywine",20,37],["Strong American Ale","Wheatwine",16,30],["European Sour Ale","Berliner Weisse",4,6],["European Sour Ale","Flanders Red Ale",20,32],["European Sour Ale","Oud Bruin",30,43],["European Sour Ale","Lambric",6,14],["European Sour Ale","Gueuze",6,14],["European Sour Ale","Fruit Lambric",6,14],["Belgian Ale","Witbier",4,8],["Belgian Ale","Belgian Pale Ale",16,28],["Belgian Ale","Bière de Garde",12,37],["Strong Belgian Ale","Belgian Blond Ale",8,14],["Strong Belgian Ale","Saison",10,43],["Strong Belgian Ale","Belgian Golden Strong Ale",6,12],["Trappist Ale","Trappist Single",6,10],["Trappist Ale","Belgian Dubbel",20,33],["Trappist Ale","Belgian Triple",9,14],["Trappist Ale","Belgian Dark Strong Ale",24,43],["Historical Beer","Gose",6,8],["Historical Beer","Kentucky Common",22,39],["Historical Beer","Lichtenhainer",6,12],["Historical Beer","London Brown Ale",43,69],["Historical Beer","Piwo Grodziskie",6,12],["Historical Beer","Pre-Prohibition Lager",6,12],["Historical Beer","Pre-Prohibition Porter",35,59],["Historical Beer","Roggenbier",28,37],["Historical Beer","Sahti",8,43]
+      ];
+      const FAMSE = [];
+      EBC_STYLES.forEach(s => {
+        let f = FAMSE.find(x => x.name === s[0]);
+        if (!f) { f = { name: s[0], min: s[2], max: s[3], styles: [] }; FAMSE.push(f); }
+        f.min = Math.min(f.min, s[2]);
+        f.max = Math.max(f.max, s[3]);
+        f.styles.push(s);
+      });
+      let selectedStyleIdxE = -1;
+
+      // ---- EBC → couleur (modèle ebc2hex, saturation 0.9) ----
+      function ebcToHex(ebc) {
+        const sat = 0.9;
+        ebc = Math.min(Math.max(ebc, 0), 80);
+        const srm = ebc * 0.508;
+        let r = Math.round(280 - srm * 5.65); r = Math.min(255, r);
+        let g = Math.round(0.188349 * Math.pow(srm, 2) - 13.2676 * srm + 239.51);
+        let b = Math.round(0.000933566 * Math.pow(srm, 4) - 0.0894788 * Math.pow(srm, 3) + 3.00611 * Math.pow(srm, 2) - 40.8883 * srm + 183.409);
+        b = Math.max(0, b);
+        let gray = (r * 0.3086 + g * 0.6094 + b * 0.0820) * (1 - sat);
+        r = Math.round(r * sat + gray); g = Math.round(g * sat + gray); b = Math.round(b * sat + gray);
+        const h = v => ("0" + Math.min(255, Math.max(0, v)).toString(16)).slice(-2);
+        return "#" + h(r) + h(g) + h(b);
+      }
+      // contraste du texte sur le bandeau
+      function darkText(hex) {
+        const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+        return (r * 0.299 + g * 0.587 + b * 0.114) > 150;
+      }
+
+      const fr = n => String(n).replace(".", ",");
+      function parseNum(s) {
+        const v = parseFloat(String(s).replace(",", "."));
+        return isNaN(v) ? 0 : v;
+      }
+      function stepById(id, delta) {
+        const inp = document.getElementById(id);
+        if (inp) {
+          const v = parseNum(inp.value) + delta;
+          inp.value = fr(Math.max(0, Math.round(v * 10) / 10));
+          recalc();
+        }
+      }
+
+      // ---- Lignes de malts ----
+      let maltCount = 0;
+      function addMalt(defaultName, defaultKg) {
+        maltCount++;
+        const div = document.createElement("div");
+        div.className = "malt";
+        div.innerHTML = `
+          <div class="malt-head"><span id="maltName${maltCount}">Malt ${maltCount}</span>
+            <button class="del" onclick="this.closest('.malt').remove();recalc()">✕</button></div>
+          <label>Malt (tapez pour chercher)</label>
+          <input list="maltDatalist" value="${defaultName || MALTS[0].name}" onchange="onMaltInput(this)" oninput="onMaltLive(this)">
+          <div class="aroma" id="aroma${maltCount}"></div>
+          <div class="row2">
+            <div><label>Kilos</label>
+              <div class="stepper">
+                <button onclick="stepById('kg${maltCount}',-0.5)">−0,5</button>
+                <input id="kg${maltCount}" inputmode="decimal" value="${fr(defaultKg || 4)}" oninput="recalc()">
+                <button onclick="stepById('kg${maltCount}',0.5)">+0,5</button>
+              </div></div>
+            <div><label>EBC du malt <button class="rst" title="Milieu du range" onclick="resetEbc(this)">↺</button></label>
+              <input id="ebc${maltCount}" inputmode="decimal" value="${fr(MALTS[0].ebc)}" oninput="recalc()"></div>
+          </div>
+          <div class="subtl" id="sub${maltCount}"></div>`;
+        document.getElementById("malts").appendChild(div);
+        applyMalt(div, defaultName || MALTS[0].name, true);
+      }
+      function findMalt(name) {
+        const v = String(name).trim().toLowerCase();
+        return MALTS.find(m => m.name.toLowerCase() === v);
+      }
+      function applyMalt(rowEl, name, silent) {
+        const m = findMalt(name);
+        const ebcInp = rowEl.querySelector("input[id^=ebc]");
+        const aromaEl = rowEl.querySelector(".aroma");
+        if (m) {
+          ebcInp.value = fr(m.ebc);
+          aromaEl.textContent = (m.aroma ? "Profil : " + m.aroma : "") + (m.stock ? " — en stock" : "");
+        } else if (!silent) {
+          aromaEl.textContent = "Malt inconnu : EBC saisi manuellement";
+        }
+      }
+      function onMaltInput(inp) { applyMalt(inp.closest(".malt"), inp.value); recalc(); }
+      function onMaltLive(inp) {
+        if (findMalt(inp.value)) onMaltInput(inp);
+      }
+      function resetEbc(btn) {
+        const rowEl = btn.closest(".malt");
+        applyMalt(rowEl, rowEl.querySelector("input[list=maltDatalist]").value, true);
+        recalc();
+      }
+      function resetMalts() {
+        document.getElementById("malts").innerHTML = "";
+        maltCount = 0;
+        addMalt("Malt Pilsner (stock)", 4);
+        addMalt("Malt Pale Ale (stock)", 0.5);
+      }
+
+      // ---- Calculs ----
+      function recalc() {
+        const vol = parseNum(document.getElementById("vol").value) || 1;
+        const eff = Math.min(parseNum(document.getElementById("eff").value), 100) / 100;
+        let sumKgEbc = 0, sumKg = 0;
+        document.querySelectorAll("#malts .malt").forEach(rowEl => {
+          const kg = parseNum(rowEl.querySelector("input[id^=kg]").value);
+          const ebc = parseNum(rowEl.querySelector("input[id^=ebc]").value);
+          sumKg += kg; sumKgEbc += kg * ebc;
+        });
+        document.querySelectorAll("#malts .malt").forEach(rowEl => {
+          const kg = parseNum(rowEl.querySelector("input[id^=kg]").value);
+          const ebc = parseNum(rowEl.querySelector("input[id^=ebc]").value);
+          const sub = rowEl.querySelector(".subtl");
+          if (sumKgEbc > 0) {
+            const pct = Math.round(kg * ebc / sumKgEbc * 100);
+            sub.innerHTML = `<span class="sw" style="background:${ebcToHex(ebcMaltVisual(ebc))}"></span>→ ${pct} % de la couleur · ${fr(kg)} kg`;
+          } else {
+            sub.innerHTML = `<span class="sw" style="background:${ebcToHex(ebcMaltVisual(ebc))}"></span>→ ${fr(kg)} kg`;
+          }
+        });
+        // EBC bière (Morey)
+        const mcu = 4.24 * sumKgEbc / vol;
+        const srm = sumKgEbc > 0 ? 1.4922 * Math.pow(mcu, 0.6859) : 0;
+        const ebcBeer = srm * 1.97;
+        // OG estimée
+        const pts = 21.6 * eff * sumKg / vol;
+        const og = 1 + pts / 1000;
+        // bandeau
+        const hex = ebcToHex(ebcBeer);
+        const bar = document.getElementById("resultBar");
+        bar.style.background = hex;
+        bar.style.color = darkText(hex) ? "#111827" : "#fff";
+        document.getElementById("ebcVal").innerHTML = `${fr(ebcBeer.toFixed(1))} <small>EBC</small>`;
+        document.getElementById("ogInfo").textContent = sumKg > 0
+          ? `OG estimée ≈ ${fr((1 + pts / 1000).toFixed(3))}`
+          : "OG — aucun malt";
+        const zone = ZONES.find(z => ebcBeer >= z.min && ebcBeer < z.max) || ZONES[ZONES.length - 1];
+        document.getElementById("zoneInfo").textContent = zone.name;
+        drawGauge(ebcBeer);
+        renderZones(ebcBeer);
+        drawStyleGauge(ebcBeer);
+        updateStyleMatch(ebcBeer);
+      }
+
+      // ---- Lanes par famille de styles (comme pour l'IBU) ----
+      function drawStyleGauge(ebc) {
+        const cv = document.getElementById("styleGauge");
+        cv.width = Math.max(90, cv.clientWidth || 160);
+        const labels = document.getElementById("laneLabelsE");
+        labels.innerHTML = FAMSE.map(f =>
+          `<div style="${ebc >= f.min && ebc <= f.max ? "color:#0f766e;font-weight:700" : ""}">${f.name}</div>`
+        ).join("");
+        const laneH = 12, padTop = 14, padBottom = 16;
+        cv.height = padTop + FAMSE.length * laneH + padBottom;
+        const w = cv.width, h = cv.height, ctx = cv.getContext("2d");
+        ctx.clearRect(0, 0, w, h);
+        const x0 = 4, x1 = w - 4, maxE = 80;
+        const X = v => x0 + (Math.min(Math.max(v, 0), maxE) / maxE) * (x1 - x0);
+        const selStyle = selectedStyleIdxE >= 0 ? EBC_STYLES[selectedStyleIdxE] : null;
+        FAMSE.forEach((f, i) => {
+          const y = padTop + i * laneH;
+          const inRange = ebc >= f.min && ebc <= f.max;
+          ctx.fillStyle = ebcToHex((f.min + f.max) / 2);
+          ctx.globalAlpha = inRange ? 1 : 0.35;
+          ctx.fillRect(X(f.min), y, X(f.max) - X(f.min), laneH - 3);
+          ctx.globalAlpha = 1;
+          if (selStyle && selStyle[0] === f.name) {
+            ctx.strokeStyle = "#b91c1c"; ctx.lineWidth = 2;
+            ctx.strokeRect(X(selStyle[2]), y, X(selStyle[3]) - X(selStyle[2]), laneH - 3);
+          }
+        });
+        // axe
+        ctx.fillStyle = "#94a3b8";
+        ctx.fillRect(x0, h - padBottom + 2, x1 - x0, 1);
+        ctx.font = "8px sans-serif";
+        for (let t = 0; t <= maxE; t += 20) {
+          ctx.fillRect(X(t), h - padBottom, 1, 5);
+          ctx.fillText(String(t), X(t) - 3, h - 2);
+        }
+        // marqueur
+        const mx = X(ebc);
+        ctx.fillStyle = "#b91c1c";
+        ctx.fillRect(mx - 1, padTop - 4, 2, h - padTop - padBottom + 6);
+        ctx.beginPath();
+        ctx.moveTo(mx - 5, 2); ctx.lineTo(mx + 5, 2); ctx.lineTo(mx, 9);
+        ctx.closePath(); ctx.fill();
+      }
+      function updateStyleMatch(ebc) {
+        const info = document.getElementById("styleInfo");
+        if (selectedStyleIdxE >= 0) {
+          const st = EBC_STYLES[selectedStyleIdxE];
+          const inRange = ebc >= st[2] && ebc <= st[3];
+          info.textContent = inRange
+            ? `✓ Dans le style ${st[1]}`
+            : `✗ Hors style ${st[1]} (${st[2]}–${st[3]})`;
+        } else {
+          info.textContent = "";
+        }
+        const matches = EBC_STYLES.filter(s => ebc >= s[2] && ebc <= s[3]);
+        document.getElementById("matchBarE").textContent = matches.length
+          ? "Styles : " + matches.map(s => s[1]).join(" · ")
+          : "Aucun style dans cette gamme";
+      }
+      // EBC d'un malt pour la pastille visuelle (clampé à 80 pour l'affichage)
+      function ebcMaltVisual(ebc) { return Math.min(ebc, 80); }
+
+      // ---- Échelle des couleurs ----
+      function drawGauge(ebc) {
+        const cv = document.getElementById("colorGauge");
+        cv.width = Math.max(280, cv.clientWidth || 500);
+        const w = cv.width, h = cv.height = 56, ctx = cv.getContext("2d");
+        ctx.clearRect(0, 0, w, h);
+        const maxEbc = 80, x0 = 0, x1 = w - 1;
+        const X = v => x0 + (Math.min(Math.max(v, 0), maxEbc) / maxEbc) * (x1 - x0);
+        // bande de couleurs réelles
+        for (let e = 0; e <= maxEbc; e++) {
+          ctx.fillStyle = ebcToHex(e);
+          ctx.fillRect(Math.floor(X(e)), 0, Math.ceil(X(e + 1) - X(e)) + 1, h - 14);
+        }
+        // graduations
+        ctx.font = "10px sans-serif"; ctx.fillStyle = "#475569";
+        for (let t = 0; t <= maxEbc; t += 20) {
+          ctx.fillRect(X(t), h - 14, 1, 5);
+          ctx.fillText(String(t), Math.min(X(t), w - 12), h - 2);
+        }
+        // marqueur
+        const mx = X(ebc);
+        ctx.fillStyle = "#b91c1c";
+        ctx.beginPath();
+        ctx.moveTo(mx - 6, 2); ctx.lineTo(mx + 6, 2); ctx.lineTo(mx, 12);
+        ctx.closePath(); ctx.fill();
+        ctx.fillRect(mx - 1, 10, 2, h - 20);
+        ctx.font = "bold 10px sans-serif";
+        const lx = Math.min(Math.max(mx, 18), w - 18);
+        ctx.fillText(fr(ebc.toFixed(1)), lx - 12, 24);
+      }
+      function renderZones(ebc) {
+        document.getElementById("zones").innerHTML = ZONES.map(z => {
+          const mid = (z.min + z.max) / 2;
+          const hit = ebc >= z.min && ebc < z.max;
+          return `<div class="zone ${hit ? "hit" : ""}">
+            <span class="sw" style="background:${ebcToHex(mid)}"></span>
+            <b>${z.name}</b>&nbsp;<span>(${z.min}–${z.max}${z.max === 80 ? "+" : ""} EBC)</span>
+          </div>`;
+        }).join("");
+      }
+
+      // ---- Init ----
+      (function init() {
+        const dl = document.createElement("datalist");
+        dl.id = "maltDatalist";
+        MALTS.slice().sort((a, b) => (b.stock - a.stock) || a.name.localeCompare(b.name, "fr")).forEach(m => {
+          const o = document.createElement("option");
+          o.value = m.name;
+          o.label = `${fr(m.min)}–${fr(m.max)} EBC${m.stock ? " — en stock" : ""}`;
+          dl.appendChild(o);
+        });
+        document.body.appendChild(dl);
+        // datalist styles EBC : triée par famille puis par style (A→Z)
+        const stDl = document.createElement("datalist");
+        stDl.id = "styleDatalistE";
+        EBC_STYLES.map((s, i) => [i, s])
+          .sort((a, b) => a[1][0].localeCompare(b[1][0], "fr") || a[1][1].localeCompare(b[1][1], "fr"))
+          .forEach(([i, s]) => {
+            const o = document.createElement("option");
+            o.value = s[1];
+            o.label = `${s[0]} (${s[2]}–${s[3]} EBC)`;
+            stDl.appendChild(o);
+          });
+        document.body.appendChild(stDl);
+        const stSearch = document.getElementById("styleSearchE");
+        stSearch.addEventListener("change", () => {
+          const v = stSearch.value.trim().toLowerCase();
+          const idx = v ? EBC_STYLES.findIndex(s => s[1].toLowerCase() === v) : -1;
+          selectedStyleIdxE = idx;
+          recalc();
+        });
+        ["vol", "eff"].forEach(id => document.getElementById(id).oninput = recalc);
+        resetMalts();
+        // re-dessin une fois la mise en page terminée (les canvas n'ont leur largeur réelle qu'après rendu)
+        requestAnimationFrame(() => recalc());
+        window.addEventListener("resize", recalc);
+      })();
+    </script>
+  </body>
+</html>
